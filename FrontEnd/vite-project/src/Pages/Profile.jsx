@@ -16,7 +16,7 @@ const Profile = () => {
     // get logged in user from localStorage
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser && storedUser.email) {
-      fetch(`http://localhost:5000/api/profile/${storedUser.email}`)
+      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/profile/${storedUser.email}`)
         .then((res) => res.json())
         .then((data) => {
           setUser(data);

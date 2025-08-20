@@ -19,7 +19,7 @@ export default function AISuggest() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -29,7 +29,7 @@ export default function AISuggest() {
       setMessages([...newMessages, { role: "assistant", content: data.reply }]);
     } catch (error) {
       console.error(error);
-      setMessages([...newMessages, { role: "assistant", content: "❌ Error: Could not connect to AI." }]);
+      setMessages([...newMessages, { role: "assistant", content: "❌ Error: Could not connect" }]);
     }
 
     setLoading(false);
@@ -49,8 +49,8 @@ export default function AISuggest() {
               <div
                 key={idx}
                 className={`p-3 rounded-2xl max-w-[75%] break-words shadow-sm ${msg.role === "user"
-                    ? "bg-blue-600 text-white self-end ml-auto rounded-br-none"
-                    : "bg-gray-200 text-gray-900 self-start rounded-bl-none"
+                  ? "bg-blue-600 text-white self-end ml-auto rounded-br-none"
+                  : "bg-gray-200 text-gray-900 self-start rounded-bl-none"
                   }`}
               >
                 {msg.content}
@@ -82,8 +82,8 @@ export default function AISuggest() {
               onClick={sendMessage}
               disabled={loading}
               className={`px-5 py-2 rounded-xl text-white hover:bg-purple-400 cursor-pointer font-medium transition ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
                 }`}
             >
               Send

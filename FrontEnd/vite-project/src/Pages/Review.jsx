@@ -25,14 +25,14 @@ const Review = () => {
             setLoading(true);
 
             // Save to DB
-            await fetch("http://localhost:5000/api/resume/create", {
+            await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/resume/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(resumeData),
             });
 
             // Generate Resume PDF (now from Ollama instead of OpenAI)
-            const res = await fetch("http://localhost:5000/api/resume/generate", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/resume/generate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(resumeData),
