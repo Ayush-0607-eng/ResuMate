@@ -13,7 +13,7 @@ const app = express();
 
 // ✅ Allow your Vercel frontend
 const allowedOrigins = [
-  "https://resu-mate-online.vercel.app", // your production frontend
+  "https://resu-mate-two.vercel.app", // your production frontend
   "http://localhost:5173"                // local dev (Vite default)
 ];
 
