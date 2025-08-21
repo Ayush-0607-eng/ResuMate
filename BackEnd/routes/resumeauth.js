@@ -1,7 +1,7 @@
 import express from "express";
 import Resume from "../models/resume.js";
 import PDFDocument from "pdfkit";
-import ollama from "ollama";
+import Groq from "groq-sdk";
 
 const router = express.Router();
 
@@ -19,45 +19,36 @@ router.post("/create", async (req, res) => {
     }
 });
 
-// (Optional) Get all resumes
-router.get("/", async (req, res) => {
-    try {
-        const resumes = await Resume.find();
-        res.status(200).json(resumes);
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching resumes", error: err });
-    }
-});
-
-// Generate Resume with Ollama
+// Generate Resume with Groq
 router.post("/generate", async (req, res) => {
     try {
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
         const userData = req.body;
 
-        // Ask Ollama (llama3)
         const prompt = `
         You are a professional resume writer. 
-        Rewrite and improve the following resume data into polished bullet points and professional phrasing.
-        Output should be structured with clear sections: Education, Experience, Skills, Certifications, etc.
-        Do NOT include any intro text like "Here is the resume".
-        Only output the resume content.
-        There should not be any encoding errors in the final output.
-        Dont add adress in the resume.
-        Add points like " Can work both independently and collaboratively in team environment , Organized and committed to consistent improvement and delivery etc under Work Approch and Capabilities.
+        Rewrite the following resume data into clear bullet points with simple text.
+        Do NOT use symbols like *, —, •, or fancy quotes.
+        Use plain English only.
+        Sections must be: Education, Experience, Skills, Certifications, Work Approach & Capabilities
+        Dont add start year and end year as a section.
+        Add by yourself a section at the end "Work Approach & Capabilities" and add points like  "Can work both independently and collaboratively in team environment" , "Organized and committed to consistent improvement and delivery" and others by yourself. make it proffesional.
+        Make section names clear and bold.
         ${JSON.stringify(userData)}
         `;
 
-        const response = await ollama.chat({
-            model: "llama3",
+        const response = await groq.chat.completions.create({
+            model: "llama3-8b-8192",
             messages: [{ role: "user", content: prompt }],
         });
 
-        let resumeText = response.message?.content || "No content generated.";
+        let resumeText = response.choices[0]?.message?.content || "No content generated.";
 
-        // Strip unwanted filler like "Here is..."
-        resumeText = resumeText.replace(/Here is.*?:/gi, "").trim();
+        // 🧹 Clean unwanted symbols (keep only ASCII letters, numbers, punctuation)
+        resumeText = resumeText.replace(/[^\x00-\x7F]/g, "");
+        resumeText = resumeText.replace(/\*/g, "").replace(/•/g, "").trim();
 
-        // Split into sections (simple detection)
+        // Split into sections
         const sections = resumeText.split(/\n(?=[A-Z][A-Za-z ]+:)/);
 
         // Generate PDF
@@ -73,13 +64,12 @@ router.post("/generate", async (req, res) => {
             }).end(pdfData);
         });
 
-        // Header (Name + Contact Info)
+        // Header
         doc.font("Helvetica-Bold").fontSize(22).text(userData.personalInfo?.name || "Your Name", { align: "center" });
         doc.font("Helvetica").fontSize(12).text(
             `${userData.personalInfo?.email || ""} | ${userData.personalInfo?.phone || ""}`,
             { align: "center" }
         );
-        doc.text(userData.personalInfo?.address || "", { align: "center" });
         doc.moveDown(2);
 
         // Add Sections
@@ -90,10 +80,6 @@ router.post("/generate", async (req, res) => {
                 doc.moveDown(0.5);
                 doc.font("Helvetica").fontSize(12).text(contentLines.join("\n").trim(), { align: "left" });
                 doc.moveDown(1);
-            } else {
-                // fallback for loose lines
-                doc.font("Helvetica").fontSize(12).text(section.trim(), { align: "left" });
-                doc.moveDown(0.5);
             }
         });
 
@@ -105,6 +91,9 @@ router.post("/generate", async (req, res) => {
 });
 
 export default router;
+
+
+
 
 
 

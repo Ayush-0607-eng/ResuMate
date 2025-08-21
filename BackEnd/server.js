@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
+dotenv.config();
+const app = express();
+
 import authRoutes from "./routes/auth.js";
 import resumeRoutes from "./routes/resumeauth.js";
 import userRoutes from "./routes/profile.js";
 import chatRoutes from "./routes/chat.js";
-
-dotenv.config();
-const app = express();
 
 // ✅ Allow your Vercel frontend
 const allowedOrigins = [
@@ -50,5 +50,5 @@ app.use("/api", chatRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log("🤖 Using Ollama for AI resume generation (no API key needed)");
+  console.log("🤖 Using Groq AI (Llama 3) for resume suggestions");
 });
